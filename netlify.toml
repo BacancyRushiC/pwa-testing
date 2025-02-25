@@ -1,0 +1,15 @@
+[[redirects]]
+  from = "/sw.js"
+  to = "/sw.js"
+  status = 200
+
+[[headers]]
+  for = "/manifest.json"
+  [headers.values]
+    Content-Type = "application/json"
+
+[[redirects]]
+  from = "http://pwa-testing-bacancy.netlify.app/*"
+  to = "https://pwa-testing-bacancy.netlify.app/:splat"
+  status = 301
+  force = true
