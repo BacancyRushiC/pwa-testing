@@ -45,7 +45,7 @@ const PWAInstallModal = () => {
       isOpen={isModalOpen}
       onRequestClose={handleCloseModal}
       contentLabel="Install App Modal"
-      className="bg-white text-customBlack shadow-lg max-w-xs w-10/12 flex items-center gap-4 fixed z-50"
+      className="bg-white text-customBlack shadow-lg max-w-xs w-10/12 flex items-center gap-4 fixed z-50 md:hidden"
       overlayClassName="fixed inset-0 bg-transparent"
       shouldCloseOnOverlayClick={true}
     >
