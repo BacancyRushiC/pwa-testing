@@ -34,7 +34,7 @@ const HomePage = () => {
     Notification.requestPermission().then((permission) => {
       if (permission === "granted") {
         sendNotification(
-          "Did you make a $1,000,000 purchase at Dr. Evil..",
+          "Your order of 10 samosas & chai is ready!",
           "Test Notification"
         );
       }
@@ -78,9 +78,9 @@ const HomePage = () => {
         </p>
       ) : null}
 
-      <button disabled className="btn" onClick={handleVibrate}>
+      {/* <button disabled className="btn" onClick={handleVibrate}>
         Reading Otp ( only in chrome android )
-      </button>
+      </button> */}
       <button className="btn" onClick={handleVibrate}>
         Vibrate (only Mobile)
       </button>
@@ -94,9 +94,9 @@ const HomePage = () => {
       <button className="btn" style={{ backgroundColor: "gray" }}>
         Plateform = {navigator.platform}{" "}
       </button>
-      <button onClick={() => navigate("/scanner")} className="btn">
+      {/* <button onClick={() => navigate("/scanner")} className="btn">
         Scan QR
-      </button>
+      </button> */}
     </div>
   );
 };

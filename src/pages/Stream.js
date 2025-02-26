@@ -1,111 +1,103 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
+import { useNavigate } from "react-router-dom"; // Assuming React Router is used
 
 const Stream = () => {
-  const [count, setcount] = useState(10)
-  
+  const [count, setCount] = useState(10);
+  const videoRef = useRef(null);
+  const mediaRecorderRef = useRef(null);
+  const recordedChunks = useRef([]);
+  const navigate = useNavigate();
+
   useEffect(() => {
-    var video = document.querySelector("#videoElement");
-  
     if (navigator.mediaDevices.getUserMedia) {
       navigator.mediaDevices
         .getUserMedia({ video: true, audio: true })
-        .then(function (stream) {
-            video.srcObject = stream;
-          var mediaRecorder = new MediaRecorder(stream);
-          mediaRecorder.ondataavailable = handleDataAvailable;
-         mediaRecorder.start();
-         let recordedChunks=[];
+        .then((stream) => {
+          if (videoRef.current) {
+            videoRef.current.srcObject = stream;
+          }
+          const mediaRecorder = new MediaRecorder(stream);
+          mediaRecorderRef.current = mediaRecorder;
 
+          mediaRecorder.ondataavailable = (event) => {
+            if (event.data.size > 0) {
+              recordedChunks.current.push(event.data);
+            }
+          };
 
-function handleDataAvailable(event) {
-  console.log("data-available");
-  if (event.data.size > 0) {
-    recordedChunks.push(event.data);
-    console.log(recordedChunks);
-    download(recordedChunks);
-  } else {
-    // ...
-  }
-}
-function download(recordedChunks) {
-  var blob = new Blob(recordedChunks, {
-    type: "video/webm"
-  });
-  var url = URL.createObjectURL(blob);
-  var a = document.createElement("a");
-  document.body.appendChild(a);
-  a.style = "display: none";
-  a.href = url;
-  a.download = "test.webm";
-  a.click();
-  window.URL.revokeObjectURL(url);
-}
-setTimeout(() => {
-    video.srcObject = null;
-  mediaRecorder.stop();
-},11000);
+          mediaRecorder.start();
 
-// demo: to download after 9sec
-
-
-        
+          setTimeout(() => {
+            stopRecording();
+          }, 11000); // Stop recording after 11 sec
         })
-        .catch(function (err0r) {
-          console.log("Something went wrong!", err0r);
+        .catch((error) => {
+          console.error("Something went wrong!", error);
         });
     }
-
-// Optional frames per second argument.
-
-
-
   }, []);
+
   useEffect(() => {
-    if(count > 0){ 
-       setTimeout(() => {
-     setcount(count - 1)
-   }, 1000);
+    if (count > 0) {
+      const timer = setInterval(() => {
+        setCount((prev) => prev - 1);
+      }, 1000);
+      return () => clearInterval(timer);
     }
- 
-  }, [count])
+  }, [count]);
 
- 
+  const stopRecording = () => {
+    if (mediaRecorderRef.current) {
+      mediaRecorderRef.current.stop();
+      mediaRecorderRef.current.onstop = () => {
+        const blob = new Blob(recordedChunks.current, { type: "video/webm" });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = "recording.webm";
+        document.body.appendChild(a);
+        a.click();
+        URL.revokeObjectURL(url);
 
-
-
-  const stoprecording = () => {
-    // setstopRecording(true)
-
-  }
+        // Stop all tracks
+        if (videoRef.current?.srcObject) {
+          const tracks = videoRef.current.srcObject.getTracks();
+          tracks.forEach((track) => track.stop());
+          videoRef.current.srcObject = null;
+        }
+      };
+    }
+  };
 
   return (
-    <div id="container">
-      <video  autoplay="true" id="videoElement"></video>
-      <div
-      style={{
-        flexDirection:"row",
-        display:"flex",
-        alignItems:"center",
-      }}
+    <div className="min-h-screen bg-gray-900 flex flex-col items-center justify-center text-white">
+      {/* Back Button */}
+      <button
+        onClick={() => navigate("/")}
+        className="absolute top-4 left-4 bg-gray-800 hover:bg-gray-700 p-2 rounded-full"
       >
-    <div
-    style={{
-      content:"",
-      width:'10px',
-      height:"10px",
-      borderRadius:100,
-backgroundColor:"red",
-marginRight:"10px",
-        }}
-    >
+        <span className="text-xl">←</span>
+      </button>
 
-    </div>
+      {/* Video Stream */}
+      <video
+        autoPlay
+        ref={videoRef}
+        id="videoElement"
+        className="w-11/12 max-w-lg rounded-lg shadow-lg"
+      />
 
-           <h3>Recording </h3>
+      {/* Recording Indicator */}
+      <div className="flex items-center mt-4">
+        <div className="w-3 h-3 bg-red-500 rounded-full animate-pulse mr-2"></div>
+        <h3 className="text-lg font-semibold">Recording...</h3>
       </div>
-   
-      <p onClick={()=>stoprecording()} >Video will be downloaded after {count}s</p>
 
+      {/* Countdown Timer */}
+      <p className="mt-2 text-sm">
+        Video will be downloaded after{" "}
+        <span className="font-bold">{count}s</span>
+      </p>
     </div>
   );
 };
